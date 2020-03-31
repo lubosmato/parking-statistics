@@ -1,0 +1,10 @@
+marshmallow
+aiohttp
+PySide2
+geomdl
+scipy
+matplotlib
+opencv-python
+numpy
+scikit-image
+colorlog
