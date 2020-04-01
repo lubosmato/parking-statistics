@@ -27,26 +27,26 @@ class Size:
 
 
 @dataclass
-class Rect:
-    start: Point
+class Rectangle:
+    top_left: Point
     size: Size
 
     @staticmethod
-    def from_cv_rect(cv_rect: Tuple[int, int, int, int]) -> "Rect":
-        return Rect(Point(*cv_rect[0:2]), Size(*cv_rect[2:4]))
+    def from_cv_rect(cv_rect: Tuple[int, int, int, int]) -> "Rectangle":
+        return Rectangle(Point(*cv_rect[0:2]), Size(*cv_rect[2:4]))
 
     def roi(self) -> Tuple[Point, Point]:
-        return self.start, Point(self.start.x + self.size.width, self.start.y + self.size.height)
+        return self.top_left, Point(self.top_left.x + self.size.width, self.top_left.y + self.size.height)
 
     def vertices(self) -> Tuple[Point, Point, Point, Point]:
-        return self.start, \
-               Point(self.start.x + self.size.width, self.start.y), \
-               Point(self.start.x + self.size.width, self.start.y + self.size.height), \
-               Point(self.start.x, self.start.y + self.size.height)
+        return self.top_left, \
+               Point(self.top_left.x + self.size.width, self.top_left.y), \
+               Point(self.top_left.x + self.size.width, self.top_left.y + self.size.height), \
+               Point(self.top_left.x, self.top_left.y + self.size.height)
 
     def draw_into(self, img: np.ndarray, color: Tuple[int, int, int], thickness=1):
         p1, p2 = self.roi()
         cv2.rectangle(img, p1.to_tuple(), p2.to_tuple(), color, thickness=thickness, lineType=cv2.LINE_AA)
 
     def np_slice(self) -> Tuple[slice, slice]:
-        return slice(self.start.y, self.start.y + self.size.height), slice(self.start.x, self.start.x + self.size.width)
+        return slice(self.top_left.y, self.top_left.y + self.size.height), slice(self.top_left.x, self.top_left.x + self.size.width)

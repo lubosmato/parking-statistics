@@ -40,6 +40,7 @@ class Server:
     def __init__(self):
         self.app = web.Application()
         self._mjpeg_streams = dict()
+        self._static_folder = Path(__file__).resolve().parent.parent / "frontend" / "dist" / "spa"
 
     def add_handler(self, path: str, handler: RestHandler):
         allowed_http_methods = ["get", "post", "put", "patch", "delete"]
@@ -64,11 +65,27 @@ class Server:
             version="v1",
             url="/api/docs/swagger.json",
             swagger_path="/api/docs",
+            request_data_name="data",
         )
         self.app.middlewares.append(validation_middleware)
-        static_folder = Path(__file__).resolve().parent.parent / "frontend" / "dist"
-        self.app.add_routes([web.static('/', static_folder)])
+        self.app.middlewares.append(self._static_serve)
+        self.app.add_routes([web.static('/', self._static_folder)])
         web.run_app(self.app)
+
+    @web.middleware
+    async def _static_serve(self, request, handler):
+        request_path = Path(request.path).relative_to("/")
+        if len(request_path.parts) > 0 and request_path.parts[0] in {"mjpeg", "api"}:
+            return await handler(request)
+
+        file_path = self._static_folder / request_path  # rebase into static dir
+        if not file_path.exists():
+            return web.HTTPNotFound()
+        if file_path.is_dir():
+            file_path /= 'index.html'
+            if not file_path.exists():
+                return web.HTTPNotFound()
+        return web.FileResponse(file_path)
 
     def add_mjpeg_stream(self, path: str, stream_rate=10) -> MjpegStream:
         if path in self._mjpeg_streams:

@@ -1,8 +1,14 @@
 <template>
   <div>
     <img ref="image" :src="url" alt="MJPEG stream" />
-    <canvas @mousemove="onMouseMove" @touchmove="onTouchMove" ref="canvas" :width="width" :height="height"></canvas>
-    <div>X: {{ x }}, Y: {{ y }}</div>
+    <canvas
+      @click="onClick"
+      @mousemove="onMouseMove"
+      @touchmove="onTouchMove"
+      ref="canvas"
+      :width="width"
+      :height="height"
+    ></canvas>
   </div>
 </template>
 
@@ -18,6 +24,12 @@ export default {
   props: {
     width: { type: Number, required: true },
     height: { type: Number, required: true },
+    value: {
+      type: Object,
+      default: () => {
+        return { x: 0, y: 0 }
+      },
+    },
     frameRate: { type: Number, default: 60 },
     url: { type: String, required: true },
   },
@@ -35,11 +47,22 @@ export default {
       const clientY = event.touches[0]?.clientY
       this.x = clamp(Math.round(clientX - rect.left), 0, rect.width - 1)
       this.y = clamp(Math.round(clientY - rect.top), 0, rect.height - 1)
+
+      this.$emit("input", { x: this.x, y: this.y })
     },
     onMouseMove(event) {
       const rect = this.$refs.canvas.getBoundingClientRect()
       this.x = clamp(Math.round(event.clientX - rect.left), 0, rect.width - 1)
       this.y = clamp(Math.round(event.clientY - rect.top), 0, rect.height - 1)
+
+      this.$emit("input", { x: this.x, y: this.y })
+    },
+    onClick(event) {
+      const rect = this.$refs.canvas.getBoundingClientRect()
+      const x = clamp(Math.round(event.clientX - rect.left), 0, rect.width - 1)
+      const y = clamp(Math.round(event.clientY - rect.top), 0, rect.height - 1)
+
+      this.$emit("click", { x, y })
     },
     draw() {
       const context = this.context
@@ -47,10 +70,10 @@ export default {
 
       context.drawImage(this.$refs.image, 0, 0)
 
-      context.beginPath()
-      context.moveTo(0, 0)
-      context.lineTo(this.x, this.y)
-      context.stroke()
+      // context.beginPath()
+      // context.moveTo(0, 0)
+      // context.lineTo(this.x, this.y)
+      // context.stroke()
     },
   },
   mounted() {
