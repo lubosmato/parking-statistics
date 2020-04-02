@@ -1,3 +1,5 @@
+import logging
+
 from aiohttp import web
 from aiohttp.web_request import Request
 from aiohttp.web_response import Response
@@ -8,6 +10,9 @@ from server.analysis.analyzer import ImageAnalyzer
 from server.analysis.types import Point
 from server.logging import load_logger_config
 from server.server import RestHandler, Server
+
+
+logger = logging.getLogger(__name__)
 
 
 class RequestSchema(Schema):
@@ -37,12 +42,6 @@ class PoISchema(Schema):
 class PoiHandler(RestHandler):
     def __init__(self, analyzer: ImageAnalyzer):
         self.analyzer = analyzer
-        self.poi = [
-            Point(0, 0),
-            Point(0, 0),
-            Point(0, 0),
-            Point(0, 0),
-        ]
 
     @docs(
         tags=["analysis"],

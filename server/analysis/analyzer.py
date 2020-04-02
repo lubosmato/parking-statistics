@@ -22,11 +22,12 @@ class ImageAnalyzer(Thread):
         super().__init__()
 
         self.roi_size = Size(512, 256)
+        self.camera_size = Size(1920 // 2, 1080 // 2)
         self.poi = [
             Point(0, 0),
-            Point(200, 0),
-            Point(200, 200),
-            Point(0, 200),
+            Point(self.camera_size.width - 1, 0),
+            Point(self.camera_size.width - 1, self.camera_size.height - 1),
+            Point(0, self.camera_size.height - 1),
         ]
         self._is_running = False
         self._camera_image = np.empty((1, 1, 3), dtype=np.uint8)
@@ -79,27 +80,30 @@ class ImageAnalyzer(Thread):
             compressor.stop()
 
     def run(self) -> None:
+        debug = False
+
         start_time = time.time()
         log_fps_every = 100  # every 100 frame
         frame_count = 0
         while self._is_running:
             result, frame = self._camera.read()
             if result:
-                self._camera_image = cv2.resize(frame, (1920 // 2, 1080 // 2))
+                self._camera_image = cv2.resize(frame, self.camera_size.to_tuple())
 
                 self._analyze()
                 self._compress()
                 self._stream()
 
-                frame_count += 1
-                if frame_count % log_fps_every == 0:
-                    time_delta = (time.time() - start_time)
-                    if time_delta == 0:
-                        true_fps = 0
-                    else:
-                        true_fps = log_fps_every / time_delta
-                    logger.info(f"Camera FPS is {true_fps:.2f}")
-                    start_time = time.time()
+                if debug:
+                    frame_count += 1
+                    if frame_count % log_fps_every == 0:
+                        time_delta = (time.time() - start_time)
+                        if time_delta == 0:
+                            true_fps = 0
+                        else:
+                            true_fps = log_fps_every / time_delta
+                        logger.info(f"Camera FPS is {true_fps:.2f}")
+                        start_time = time.time()
             else:
                 logger.warning(f"Skipped frame, result: {result}")
                 time.sleep(1 / self._camera_fps)
