@@ -7,10 +7,10 @@
     <q-list bordered class="rounded-borders">
       <q-item-label header>Available curves</q-item-label>
 
-      <div v-for="(curve, index) in curves" :key="index">
+      <div v-for="(curve, index) in value" :key="index">
         <q-item>
           <q-item-section avatar center>
-            <q-radio :val="curve" v-model="selectedCurve" />
+            <q-radio v-model="selectedCurve" :val="curve" />
           </q-item-section>
 
           <q-item-section avatar center>
@@ -41,7 +41,7 @@
                 round
                 icon="delete"
                 color="red-8"
-                @click="deleteCurve(index)"
+                @click="deleteCurve(curve)"
               />
             </div>
           </q-item-section>
@@ -54,6 +54,7 @@
     <div class="text-h6 q-pb-sm">Add curve</div>
     <q-form @submit="addCurve" class="q-gutter-md">
       <q-input
+        ref="newCurveName"
         v-model="newCurve.name"
         label="New curve name"
         placeholder="My curve"
@@ -61,9 +62,21 @@
         :rules="[val => !!val || 'Name is required', val => val.length > 2 || 'Name must have at least 3 characters']"
       />
 
-      <q-input v-model="newCurve.color" outlined>
+      <q-input v-model="newCurve.color" label="Color" outlined>
         <template v-slot:append>
-          <q-icon name="colorize" class="cursor-pointer">
+          <q-icon
+            name="casino"
+            class="cursor-pointer"
+            :style="{ color: newCurve.color }"
+            @click="
+              newCurve.color =
+                '#' +
+                Math.random()
+                  .toString(16)
+                  .substr(-6)
+            "
+          />
+          <q-icon name="colorize" class="cursor-pointer" :style="{ color: newCurve.color }">
             <q-popup-proxy transition-show="scale" transition-hide="scale">
               <q-color v-model="newCurve.color" />
             </q-popup-proxy>
@@ -82,7 +95,7 @@ import { fabric } from "fabric"
 export default {
   name: "Curves",
   props: {
-    canvas: { type: Object, required: true },
+    value: { type: Array, required: true },
   },
   data: function() {
     return {
@@ -91,34 +104,36 @@ export default {
         name: "",
         color: "#000000",
       },
-      curves: [],
     }
   },
   methods: {
     addCurve() {
       const newCurve = {
         ...this.newCurve,
-        index: 0,
-        points: [this.addPoint(0, 0, this.newCurve.color, "0"), this.addPoint(100, 100, this.newCurve.color, "1")],
+        points: [
+          this.createPoint(0, 0, this.newCurve.color, "0"),
+          this.createPoint(100, 150, this.newCurve.color, "1"),
+        ],
       }
-      this.curves.push(newCurve)
+      this.$emit("input", [...this.value, newCurve])
       this.selectedCurve = newCurve
       this.newCurve.name = ""
+      this.$nextTick(() => this.$refs.newCurveName.resetValidation())
     },
-    addPoint(x, y, color, label) {
-      const point = new fabric.Circle({
+    createPoint(x, y, color, label) {
+      const circle = new fabric.Circle({
         fill: color,
         radius: 6,
         stroke: "black",
       })
-      point.setShadow("2px 2px 2px rgba(0, 0, 0, 0.4)")
+      circle.setShadow("2px 2px 2px rgba(0, 0, 0, 0.4)")
       const text = new fabric.Text(label, {
         fontFamily: "Roboto",
         fill: color,
         fontSize: 16,
         top: -18,
       })
-      const group = new fabric.Group([point, text], {
+      const group = new fabric.Group([circle, text], {
         left: x,
         top: y,
         lockRotation: true,
@@ -127,16 +142,19 @@ export default {
         hasControls: false,
         hasBorders: false,
       })
-      this.canvas.add(group)
       return group
     },
-    deleteCurve(index) {
-      for (const point of this.curves[index].points) {
-        this.canvas.remove(point)
-      }
-      this.curves.splice(index, 1)
-      if (this.curves.length === 0) this.selectedCurve = null
-      else this.selectedCurve = this.curves[this.curves.length - 1]
+    deleteCurve(curve) {
+      this.selectedCurve = null
+      this.$emit(
+        "input",
+        this.value.filter(c => c !== curve)
+      )
+    },
+  },
+  watch: {
+    selectedCurve() {
+      this.$emit("selectCurve", this.selectedCurve)
     },
   },
 }

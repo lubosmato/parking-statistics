@@ -28,7 +28,7 @@
 
           <q-tab-panels :keep-alive="true" v-model="selectedTab" animated>
             <q-tab-panel name="curves">
-              <Curves :canvas="canvas" />
+              <Curves v-model="curves" @selectCurve="selectedCurve = $event" />
             </q-tab-panel>
 
             <q-tab-panel name="poi">
@@ -65,6 +65,8 @@ export default {
       x: 0,
       y: 0,
       canvas: {},
+      curves: [],
+      selectedCurve: null,
       selectedTab: "curves",
       poi: {
         points: [
@@ -85,6 +87,35 @@ export default {
     "poi.points": _.throttle(function() {
       axios.post("/api/v1/poi", this.poi)
     }, 100),
+    selectedCurve(newCurve, oldCurve) {
+      const selectedRadius = 9
+      const notSelectedRadius = 6
+      if (oldCurve) {
+        for (let point of oldCurve.points) {
+          point.item(0).setRadius(notSelectedRadius)
+        }
+      }
+      if (newCurve) {
+        for (let point of newCurve.points) {
+          point.item(0).setRadius(selectedRadius)
+        }
+      }
+    },
+    curves(newValue, oldValue) {
+      const addedCurves = _.difference(newValue, oldValue)
+      const removedCurves = _.difference(oldValue, newValue)
+
+      for (const curve of removedCurves) {
+        for (const point of curve.points) {
+          this.canvas.remove(point)
+        }
+      }
+      for (const curve of addedCurves) {
+        for (const point of curve.points) {
+          this.canvas.add(point)
+        }
+      }
+    },
   },
   methods: {
     onMouseMove(event) {
@@ -92,6 +123,8 @@ export default {
       this.y = event.pointer.y
     },
     onDoubleClick(event) {
+      if (!this.selectedCurve) return
+
       const position = { x: event.pointer.x, y: event.pointer.y }
       this.$set(this.poi.points, 2, position)
     },
