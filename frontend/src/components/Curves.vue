@@ -68,13 +68,7 @@
             name="casino"
             class="cursor-pointer"
             :style="{ color: newCurve.color }"
-            @click="
-              newCurve.color =
-                '#' +
-                Math.random()
-                  .toString(16)
-                  .substr(-6)
-            "
+            @click="newCurve.color = createRandomColor()"
           />
           <q-icon name="colorize" class="cursor-pointer" :style="{ color: newCurve.color }">
             <q-popup-proxy transition-show="scale" transition-hide="scale">
@@ -90,6 +84,7 @@
 </template>
 
 <script>
+import chroma from "chroma-js"
 import { createPoint } from "components/canvas.js"
 
 export default {
@@ -123,6 +118,9 @@ export default {
         "input",
         this.value.filter(c => c !== curve)
       )
+    },
+    createRandomColor() {
+      return chroma.random()
     },
   },
   watch: {
