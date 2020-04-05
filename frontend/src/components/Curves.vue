@@ -105,7 +105,7 @@ export default {
     addCurve() {
       const newCurve = {
         ...this.newCurve,
-        points: [createPoint(0, 0, this.newCurve.color, "0"), createPoint(100, 150, this.newCurve.color, "1")],
+        points: [createPoint(100, 100, this.newCurve.color, "0"), createPoint(200, 100, this.newCurve.color, "1")],
       }
       this.$emit("input", [...this.value, newCurve])
       this.selectedCurve = newCurve

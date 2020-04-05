@@ -4,6 +4,11 @@ const routes = [
     component: () => import("layouts/MainLayout.vue"),
     children: [{ path: "", component: () => import("pages/Index.vue") }],
   },
+  {
+    path: "/curve-playground",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("pages/CurvePlayground.vue") }],
+  },
 ]
 
 // Always leave this as last one

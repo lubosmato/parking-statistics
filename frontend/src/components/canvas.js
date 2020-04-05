@@ -1,8 +1,8 @@
 import { fabric } from "fabric"
 import chroma from "chroma-js"
 
-function textColor(background) {
-  if (chroma(background).get("lab.l") > 70) {
+function textColorFromBackground(background) {
+  if (chroma(background).get("lab.l") > 75) {
     return chroma("black").hex()
   } else {
     return chroma("white").hex()
@@ -10,15 +10,16 @@ function textColor(background) {
 }
 
 function createPoint(x, y, color, label) {
+  const textColor = textColorFromBackground(color)
   const circle = new fabric.Circle({
     fill: color,
     radius: 6,
-    stroke: "black",
+    stroke: textColor,
   })
   circle.setShadow("2px 2px 2px rgba(0, 0, 0, 0.4)")
   const text = new fabric.Text(label, {
     fontFamily: "Roboto",
-    fill: textColor(color),
+    fill: textColor,
     fontSize: 13,
     top: 1,
     left: 2,
