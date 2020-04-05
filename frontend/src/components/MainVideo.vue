@@ -52,6 +52,10 @@ import _ from "lodash"
 import axios from "axios"
 import { fabric } from "fabric"
 import Curves from "components/Curves.vue"
+import { createPoint } from "components/canvas.js"
+
+const selectedRadius = 9
+const notSelectedRadius = 6
 
 export default {
   name: "MjpegVideo",
@@ -88,15 +92,15 @@ export default {
       axios.post("/api/v1/poi", this.poi)
     }, 100),
     selectedCurve(newCurve, oldCurve) {
-      const selectedRadius = 9
-      const notSelectedRadius = 6
       if (oldCurve) {
         for (let point of oldCurve.points) {
+          // TODO space for refactoring - encapsulate item(0) accessing
           point.item(0).setRadius(notSelectedRadius)
         }
       }
       if (newCurve) {
         for (let point of newCurve.points) {
+          // TODO space for refactoring - encapsulate item(0) accessing
           point.item(0).setRadius(selectedRadius)
         }
       }
@@ -125,8 +129,16 @@ export default {
     onDoubleClick(event) {
       if (!this.selectedCurve) return
 
-      const position = { x: event.pointer.x, y: event.pointer.y }
-      this.$set(this.poi.points, 2, position)
+      const color = this.selectedCurve.color
+      const label = this.selectedCurve.points.length.toString()
+      const point = createPoint(event.pointer.x, event.pointer.y, color, label)
+      // TODO space for refactoring - encapsulate item(0) accessing
+      point.item(0).setRadius(selectedRadius)
+      this.selectedCurve.points.push(point)
+      this.canvas.add(point)
+
+      // const position = { x: event.pointer.x, y: event.pointer.y }
+      // this.$set(this.poi.points, 2, position)
     },
   },
   beforeMount() {
@@ -138,7 +150,9 @@ export default {
       })
   },
   mounted() {
-    this.canvas = new fabric.Canvas(this.$refs.canvas)
+    this.canvas = new fabric.Canvas(this.$refs.canvas, {
+      selection: false,
+    })
     this.canvas.on("mouse:move", this.onMouseMove)
     this.canvas.on("mouse:dblclick", this.onDoubleClick)
 

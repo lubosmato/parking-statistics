@@ -90,7 +90,7 @@
 </template>
 
 <script>
-import { fabric } from "fabric"
+import { createPoint } from "components/canvas.js"
 
 export default {
   name: "Curves",
@@ -110,39 +110,12 @@ export default {
     addCurve() {
       const newCurve = {
         ...this.newCurve,
-        points: [
-          this.createPoint(0, 0, this.newCurve.color, "0"),
-          this.createPoint(100, 150, this.newCurve.color, "1"),
-        ],
+        points: [createPoint(0, 0, this.newCurve.color, "0"), createPoint(100, 150, this.newCurve.color, "1")],
       }
       this.$emit("input", [...this.value, newCurve])
       this.selectedCurve = newCurve
       this.newCurve.name = ""
       this.$nextTick(() => this.$refs.newCurveName.resetValidation())
-    },
-    createPoint(x, y, color, label) {
-      const circle = new fabric.Circle({
-        fill: color,
-        radius: 6,
-        stroke: "black",
-      })
-      circle.setShadow("2px 2px 2px rgba(0, 0, 0, 0.4)")
-      const text = new fabric.Text(label, {
-        fontFamily: "Roboto",
-        fill: color,
-        fontSize: 16,
-        top: -18,
-      })
-      const group = new fabric.Group([circle, text], {
-        left: x,
-        top: y,
-        lockRotation: true,
-        lockScalingX: true,
-        lockScalingY: true,
-        hasControls: false,
-        hasBorders: false,
-      })
-      return group
     },
     deleteCurve(curve) {
       this.selectedCurve = null
