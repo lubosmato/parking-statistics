@@ -16,7 +16,7 @@
     "axios": "^0.18.1",
     "chroma-js": "^2.1.0",
     "fabric": "^3.6.3",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "quasar": "^1.9.12"
   },
   "devDependencies": {
