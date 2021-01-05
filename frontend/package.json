@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.6.0",
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "chroma-js": "^2.1.0",
     "fabric": "^3.6.3",
     "lodash": "^4.17.19",
